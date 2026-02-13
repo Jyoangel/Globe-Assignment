@@ -22,10 +22,10 @@ export function GlobeDemo() {
     directionalTopLight: "#ffffff",
     pointLight: "#ffffff",
     arcTime: 1000,
-    arcLength: 0.9,
+    arcLength: 1.9,
     rings: 1,
     maxRings: 3,
-    initialPosition: { lat: 22.3193, lng: 114.1694 },
+    initialPosition: { lat: 22.3193, lng: 120.1694 },
     autoRotate: true,
     autoRotateSpeed: 0.5,
   };
@@ -392,37 +392,79 @@ export function GlobeDemo() {
       color: colors[Math.floor(Math.random() * (colors.length - 1))],
     },
   ];
-
   return (
-    <div className="flex flex-row items-center justify-center py-20 h-screen md:h-auto dark:bg-black bg-white relative w-full">
-      <div className="max-w-7xl mx-auto w-full relative overflow-hidden h-full md:h-[40rem] px-4">
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 1,
-          }}
-          className="div"
+    <div className="w-full min-h-screen flex flex-col items-center bg-black relative overflow-hidden">
+
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+        className="text-center mt-16 px-4"
+      >
+        <h2 className="text-2xl md:text-5xl font-bold text-white">
+          Globe Assignment Done - We sell soap worldwide
+        </h2>
+        <p className="text-base md:text-lg text-neutral-400 max-w-2xl mt-4 mx-auto">
+          This globe is interactive and customizable. Have fun with it.
+        </p>
+      </motion.div>
+
+      {/* Globe Frame Section */}
+      <div className="relative w-full flex justify-center mt-16 px-4">
+
+
+        <div
+          className="
+          relative 
+          w-full 
+          max-w-[1300px] 
+          h-[650px] 
+          rounded-[40px] 
+          border-12 border-gray-400/20 
+          bg-[#111827] 
+          shadow-2xl 
+          overflow-hidden
+        "
         >
-          <h2 className="text-center text-xl md:text-4xl font-bold text-black dark:text-white">
-            Globe Assignment Done -We sell soap worldwide
-          </h2>
-          <p className="text-center text-base md:text-lg font-normal text-neutral-700 dark:text-neutral-200 max-w-md mt-2 mx-auto">
-            This globe is interactive and customizable. Have fun with it, and
-            don&apos;t forget to share it. :)
-          </p>
-        </motion.div>
-        <div className="absolute w-full bottom-0 inset-x-0 h-40 bg-gradient-to-b pointer-events-none select-none from-transparent dark:to-black to-white z-40" />
-        <div className="absolute w-full -bottom-20 h-72 md:h-full z-10">
-          <World data={sampleArcs} globeConfig={globeConfig} />
+
+
+          <div
+            className="
+            absolute 
+            bottom-0 
+            left-0 
+            right-0 
+            h-48 
+            bg-gradient-to-b 
+            from-transparent 
+            to-[#04060a] 
+            z-20 
+            pointer-events-none
+          "
+          />
+
+
+          <div
+            className="
+            absolute 
+           
+            left-1/2 
+            -translate-x-1/2 
+            w-[1400px] 
+            h-[1400px]
+          "
+          >
+            <World
+              data={sampleArcs}
+              globeConfig={globeConfig}
+              className="scale-[1.35]"
+            />
+          </div>
+
         </div>
       </div>
     </div>
   );
+
 }

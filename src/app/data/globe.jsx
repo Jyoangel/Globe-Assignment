@@ -1,23 +1,24 @@
+
 "use client";
-import * as THREE from "three";
-import { OrbitControls, Html } from "@react-three/drei";
+import { Html, OrbitControls } from "@react-three/drei";
 import { Canvas, extend, useThree } from "@react-three/fiber";
+import * as turf from "@turf/turf";
 import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 import {
   Color,
   Fog,
   PerspectiveCamera,
+  Raycaster,
   Scene,
   Sprite,
   SpriteMaterial,
   TextureLoader,
-  Vector3,
-  Raycaster,
   Vector2,
+  Vector3,
 } from "three";
 import ThreeGlobe from "three-globe";
 import countries from "./globe.json";
-import * as turf from "@turf/turf";
 
 extend({ ThreeGlobe });
 
@@ -26,35 +27,127 @@ const aspect = 1.2;
 const cameraZ = 300;
 let numbersOfRings = [0];
 
-
 // POPUP COMPONENT
 
-const Popup = ({ position, country }) => {
+const Popup = ({ position, player }) => {
   return (
-    <Html position={position} center >
+    <Html
+      position={position}
+      center
+      zIndexRange={[0, 0]}
+
+      style={{
+        pointerEvents: "none",
+        transform: "translate3d(-50%, -124%, 0)",
+      }}
+
+    >
       <div
         style={{
-          background: "rgba(0, 0, 0, 0.45)",
-          color: "#fff",
-          padding: "8px 18px",
-          borderRadius: "30px",
-          fontSize: "14px",
-          fontWeight: "500",
-          whiteSpace: "nowrap",
-          pointerEvents: "none",
-          transform: "translateY(-40px)",
-          backdropFilter: "blur(6px)",
-          border: "1px solid rgba(255,255,255,0.2)",
+          background: "rgba(25, 25, 25, 0.9)",
+          backdropFilter: "blur(12px)",
+          borderRadius: "18px",
+          padding: "10px",
+          color: "white",
+          fontFamily: "'Inter', sans-serif",
+          boxShadow: "0 15px 35px rgba(0,0,0,0.6)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          transform: "rotate(-8deg)",
         }}
+        className="h-56 w-40 flex flex-col z-40 items-start justify-start"
       >
-        {country}
+        {/* Navigation Buttons */}
+        <button className="absolute left-[-18px] top-[35%] -translate-y-1/2 w-8 h-8 bg-[#1e1e1e]/90 rounded-full flex items-center justify-center border border-white/10 hover:bg-black transition-all z-50">
+          <span className="text-white text-xs opacity-70">❮</span>
+        </button>
+        <button className="absolute right-[-18px] top-[35%] -translate-y-1/2 w-8 h-8 bg-[#1e1e1e]/90 rounded-full flex items-center justify-center border border-white/10 hover:bg-black transition-all z-50">
+          <span className="text-white text-xs opacity-70">❯</span>
+        </button>
+        {/* IMAGE */}
+        <div
+          style={{
+            position: "relative",
+            borderRadius: "12px",
+            overflow: "hidden",
+            marginBottom: "10px",
+          }}
+          className="h-[200px] w-full object-cover overflow-hidden"
+        >
+          <img src={player?.image} alt={player?.name} />
+
+          {/* Slider Dots */}
+          <div className="absolute bottom-[-1px] left-1/2 -translate-x-1/2">
+            <div
+              style={{
+                clipPath: "polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%)",
+                background: "#121212"
+              }}
+              className="w-14 h-4 flex items-center justify-center gap-1 px-2 pb-1"
+            >
+              <div className="w-2.5 h-[3px] bg-orange-500 rounded-full"></div>
+              <div className="w-[3px] h-[3px] bg-gray-600 rounded-full"></div>
+              <div className="w-[3px] h-[3px] bg-gray-600 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* TEXT */}
+        <div>
+          <div className="text-sm">{player?.name}</div>
+          <div className="text-xs text-white/70">{player?.team}</div>
+
+          <div className=" mt-2 text-[11px] text-white/50 flex items-center gap-1 uppercase tracking-[0.5px]">
+            🌐 {player?.country}
+          </div>
+        </div>
       </div>
     </Html>
   );
 };
 
 
+const randomPlayers = [
+  {
+    name: "Kylian Mbappé",
+    team: "PSG",
+    country: "France",
+    image: "/Kylian.jpg",
+  },
+  {
+    name: "Stephen Curry",
+    team: "Golden State",
+    country: "USA",
+    image: "Stephen.png",
+  },
+  {
+    name: "Virat Kohli",
+    team: "India",
+    country: "India",
+    image: "/Virat.jpg",
+  },
+  {
+    name: "Lionel Messi",
+    team: "Inter Miami",
+    country: "Argentina",
+    image: "/Lionel.png",
+  },
+  {
+    name: "LeBron James",
+    team: "LA Lakers",
+    country: "USA",
+    image: "/LeBron.png",
+  },
+  {
+    name: "Neymar Jr",
+    team: "Al Hilal",
+    country: "Brazil",
+    image: "/Lionel.png",
+  },
+];
 
+const getRandomPlayer = () => {
+  return randomPlayers[Math.floor(Math.random() * randomPlayers.length)];
+};
 
 const getCountryFromLatLng = (lat, lng) => {
   const point = turf.point([lng, lat]);
@@ -67,8 +160,6 @@ const getCountryFromLatLng = (lat, lng) => {
 
   return "Ocean";
 };
-
-
 
 //GLOBE COMPONENT
 
@@ -101,7 +192,6 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     ...globeConfig,
   };
 
-
   // THREE‑GLOBE INSTANCE
 
   useEffect(() => {
@@ -119,7 +209,6 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     };
   }, []);
 
-
   // GLOBE MATERIAL
 
   useEffect(() => {
@@ -136,7 +225,6 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     globeConfig.emissiveIntensity,
     globeConfig.shininess,
   ]);
-
 
   // ARCS, POINTS, RINGS
 
@@ -167,12 +255,11 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
         description: arc.endDescription || "End location",
         country: getCountryFromLatLng(arc.endLat, arc.endLng),
       });
-
     }
 
     const uniquePoints = points.filter(
       (v, i, a) =>
-        a.findIndex((v2) => v2.lat === v.lat && v2.lng === v.lng) === i
+        a.findIndex((v2) => v2.lat === v.lat && v2.lng === v.lng) === i,
     );
 
     setFilteredPoints(uniquePoints);
@@ -213,7 +300,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
       .ringMaxRadius(defaultProps.maxRings)
       .ringPropagationSpeed(RING_PROPAGATION_SPEED)
       .ringRepeatPeriod(
-        (defaultProps.arcTime * defaultProps.arcLength) / defaultProps.rings
+        (defaultProps.arcTime * defaultProps.arcLength) / defaultProps.rings,
       );
   }, [
     isInitialized,
@@ -229,15 +316,15 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     defaultProps.maxRings,
   ]);
 
-
   // ADD PINS WITH HOVER DETECTION
 
   useEffect(() => {
     if (!globeRef.current || !isInitialized || filteredPoints.length === 0)
       return;
 
+    // Remove existing pins
     pinSpritesRef.current.forEach((sprite) => {
-      if (globeRef.current) globeRef.current.remove(sprite);
+      globeRef.current.remove(sprite);
     });
     pinSpritesRef.current = [];
 
@@ -245,7 +332,19 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     const pinTexture = textureLoader.load("/pin.png");
     const spriteScale = 7;
 
-    filteredPoints.forEach((point, index) => {
+    // Keep pins in the same content, limit to 6 in front hemisphere
+    const frontPins = filteredPoints
+      .map((point) => {
+        const coords = globeRef.current.getCoords(point.lat, point.lng, 0.003);
+        return { point, coords };
+      })
+      // Only front hemisphere (z > 0) AND upper hemisphere (y > 0)
+      .filter(({ coords }) => coords.z > 0 && coords.y > 0)
+      // Sort by closest to camera (optional but cleaner)
+      .sort((a, b) => b.coords.z - a.coords.z)
+      .slice(0, 6);
+
+    frontPins.forEach(({ point, coords }) => {
       const material = new SpriteMaterial({
         map: pinTexture,
         depthWrite: false,
@@ -254,16 +353,11 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
       });
 
       const sprite = new Sprite(material);
+
       sprite.center.set(0.5, 0);
       sprite.scale.set(spriteScale, spriteScale, 1);
 
-      const surfacePos = globeRef.current.getCoords(
-        point.lat,
-        point.lng,
-        0.003
-      );
-
-      sprite.position.set(surfacePos.x, surfacePos.y, surfacePos.z);
+      sprite.position.set(coords.x, coords.y + 0.03, coords.z);
 
       sprite.userData = {
         ...point,
@@ -275,6 +369,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
       };
 
       globeRef.current.add(sprite);
+
       pinSpritesRef.current.push(sprite);
     });
 
@@ -288,7 +383,6 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     };
   }, [isInitialized, filteredPoints]);
 
-
   //  HOVER DETECTION
 
   useEffect(() => {
@@ -300,40 +394,35 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     const onMouseMove = (event) => {
       const rect = gl.domElement.getBoundingClientRect();
 
-      mouse.x =
-        ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y =
-        -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
 
       const intersects = raycaster.intersectObjects(
         pinSpritesRef.current,
-        false
+        false,
       );
 
       if (intersects.length > 0) {
         const pin = intersects[0].object;
 
         if (hoveredPin !== pin) {
-
-
           if (hoveredPin) {
             const base = globeRef.current.getCoords(
               hoveredPin.userData.lat,
               hoveredPin.userData.lng,
-              0.003
+              0.003,
             );
 
             hoveredPin.position.set(base.x, base.y, base.z);
             hoveredPin.scale.set(7, 7, 1);
           }
 
-
           const pop = globeRef.current.getCoords(
             pin.userData.lat,
             pin.userData.lng,
-            0.010
+            0.003,
           );
 
           pin.position.set(pop.x, pop.y, pop.z);
@@ -344,16 +433,12 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
           const popup = globeRef.current.getCoords(
             pin.userData.lat,
             pin.userData.lng,
-            0.09
+            0.025,
           );
 
           setPopupContent({
-            position: new THREE.Vector3(
-              popup.x,
-              popup.y,
-              popup.z
-            ),
-            country: pin.userData.country,
+            position: new THREE.Vector3(popup.x, popup.y, popup.z),
+            player: getRandomPlayer(),
           });
         }
       } else {
@@ -361,7 +446,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
           const base = globeRef.current.getCoords(
             hoveredPin.userData.lat,
             hoveredPin.userData.lng,
-            0.006
+            0.006,
           );
 
           hoveredPin.position.set(base.x, base.y, base.z);
@@ -380,9 +465,6 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     };
   }, [camera, gl, hoveredPin]);
 
-
-
-
   useEffect(() => {
     if (!globeRef.current || !isInitialized || !data) return;
 
@@ -391,7 +473,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
       const newNumbersOfRings = genRandomNumbers(
         0,
         data.length,
-        Math.floor((data.length * 4) / 5)
+        Math.floor((data.length * 4) / 5),
       );
       const ringsData = data
         .filter((d, i) => newNumbersOfRings.includes(i))
@@ -410,18 +492,11 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     <>
       <group ref={groupRef} />
       {popupContent && (
-        <Popup
-          position={popupContent.position}
-          country={popupContent.country}
-        />
+        <Popup position={popupContent.position} player={popupContent.player} />
       )}
-
     </>
   );
 }
-
-
-
 
 export function WebGLRendererConfig() {
   const { gl, size } = useThree();
@@ -433,18 +508,13 @@ export function WebGLRendererConfig() {
   return null;
 }
 
-
-
 export function World(props) {
   const { globeConfig } = props;
   const scene = new Scene();
   scene.fog = new Fog(0xffffff, 400, 2000);
 
   return (
-    <Canvas
-      scene={scene}
-      camera={new PerspectiveCamera(50, aspect, 180, 1800)}
-    >
+    <Canvas scene={scene} camera={new PerspectiveCamera(50, aspect, 180, 1800)}>
       <WebGLRendererConfig />
       <ambientLight color={globeConfig.ambientLight} intensity={0.6} />
       <directionalLight
@@ -456,11 +526,12 @@ export function World(props) {
         position={new Vector3(-200, 500, 200)}
       />
       <pointLight
+        className="z-50"
         color={globeConfig.pointLight}
         position={new Vector3(-200, 500, 200)}
         intensity={0.8}
       />
-      <Globe {...props} />
+      <Globe className="scale-[0.5]" {...props} />
       <OrbitControls
         enablePan={false}
         enableZoom={false}
@@ -474,9 +545,6 @@ export function World(props) {
     </Canvas>
   );
 }
-
-
-
 
 export function hexToRgb(hex) {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -499,8 +567,3 @@ export function genRandomNumbers(min, max, count) {
   }
   return arr;
 }
-
-
-
-
-
