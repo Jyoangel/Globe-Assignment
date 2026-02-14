@@ -26,8 +26,8 @@ export function GlobeDemo() {
     rings: 1,
     maxRings: 3,
     initialPosition: { lat: 22.3193, lng: 120.1694 },
-    autoRotate: true,
-    autoRotateSpeed: 0.5,
+    autoRotate: false,
+    autoRotateSpeed: 0,
   };
   const colors = ["#06b6d4", "#3b82f6", "#6366f1"];
   const sampleArcs = [

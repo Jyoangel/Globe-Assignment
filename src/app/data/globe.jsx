@@ -5,6 +5,7 @@ import { Canvas, extend, useThree } from "@react-three/fiber";
 import * as turf from "@turf/turf";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { motion } from "motion/react";
 import {
   Color,
   Fog,
@@ -27,84 +28,86 @@ const aspect = 1.2;
 const cameraZ = 300;
 let numbersOfRings = [0];
 
-// POPUP COMPONENT
 
 const Popup = ({ position, player }) => {
   return (
     <Html
       position={position}
       center
-      zIndexRange={[0, 0]}
+
 
       style={{
         pointerEvents: "none",
-        transform: "translate3d(-50%, -124%, 0)",
-      }}
 
+        transform: "translate3d(-85%, -110%, 0)",
+      }}
     >
-      <div
+      <motion.div
+
+        initial={{ opacity: 0, scale: 0, y: 20, rotate: 0, transformOrigin: "bottom right" }}
+
+        animate={{ opacity: 1, scale: 1, y: -5, rotate: -5 }}
+        exit={{ opacity: 0, scale: 0, y: 20, rotate: 0 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+        className="relative w-[200px] bg-[#121212]/95 backdrop-blur-xl rounded-[22px] p-2 shadow-2xl border border-white/10"
         style={{
-          background: "rgba(25, 25, 25, 0.9)",
-          backdropFilter: "blur(12px)",
-          borderRadius: "18px",
-          padding: "10px",
+
           color: "white",
           fontFamily: "'Inter', sans-serif",
-          boxShadow: "0 15px 35px rgba(0,0,0,0.6)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          transform: "rotate(-8deg)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.8)",
+          marginleft: "10px"
+
         }}
-        className="h-56 w-40 flex flex-col z-40 items-start justify-start"
       >
-        {/* Navigation Buttons */}
-        <button className="absolute left-[-18px] top-[35%] -translate-y-1/2 w-8 h-8 bg-[#1e1e1e]/90 rounded-full flex items-center justify-center border border-white/10 hover:bg-black transition-all z-50">
-          <span className="text-white text-xs opacity-70">❮</span>
+
+        <button className="absolute left-[-14px] top-[40%] -translate-y-1/2 w-10 h-10 bg-[#1e1e1e] rounded-full flex items-center justify-center border border-white/10 shadow-xl z-50">
+          <span className="text-white text-[10px]">❮</span>
         </button>
-        <button className="absolute right-[-18px] top-[35%] -translate-y-1/2 w-8 h-8 bg-[#1e1e1e]/90 rounded-full flex items-center justify-center border border-white/10 hover:bg-black transition-all z-50">
-          <span className="text-white text-xs opacity-70">❯</span>
+        <button className="absolute right-[-14px] top-[40%] -translate-y-1/2 w-10 h-10 bg-[#1e1e1e] rounded-full flex items-center justify-center border border-white/10 shadow-xl z-50">
+          <span className="text-white text-[10px]">❯</span>
         </button>
-        {/* IMAGE */}
-        <div
-          style={{
-            position: "relative",
-            borderRadius: "12px",
-            overflow: "hidden",
-            marginBottom: "10px",
-          }}
-          className="h-[200px] w-full object-cover overflow-hidden"
-        >
-          <img src={player?.image} alt={player?.name} />
+
+        {/* IMAGE CONTAINER */}
+        <div className="relative h-48 w-full rounded-[14px] overflow-hidden mb-3 bg-zinc-800">
+          <img
+            src={player?.image}
+            alt={player?.name}
+            className="w-full h-full object-cover"
+          />
 
           {/* Slider Dots */}
-          <div className="absolute bottom-[-1px] left-1/2 -translate-x-1/2">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
             <div
               style={{
                 clipPath: "polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%)",
                 background: "#121212"
               }}
-              className="w-14 h-4 flex items-center justify-center gap-1 px-2 pb-1"
+              className="w-12 h-3.5 flex items-center justify-center gap-1 px-2 pb-1"
             >
-              <div className="w-2.5 h-[3px] bg-orange-500 rounded-full"></div>
-              <div className="w-[3px] h-[3px] bg-gray-600 rounded-full"></div>
-              <div className="w-[3px] h-[3px] bg-gray-600 rounded-full"></div>
+              <div className="w-2.5 h-[2px] bg-orange-500 rounded-full"></div>
+              <div className="w-[2px] h-[2px] bg-gray-600 rounded-full"></div>
+              <div className="w-[2px] h-[2px] bg-gray-600 rounded-full"></div>
             </div>
           </div>
         </div>
 
-        {/* TEXT */}
-        <div>
-          <div className="text-sm">{player?.name}</div>
-          <div className="text-xs text-white/70">{player?.team}</div>
+        {/* TEXT AREA */}
+        <div className="px-1 pb-1">
+          <div className="text-[20px] font-semibold tracking-tight">{player?.name}</div>
+          <div className="text-[15px] text-white/80">{player?.team}</div>
 
-          <div className=" mt-2 text-[11px] text-white/50 flex items-center gap-1 uppercase tracking-[0.5px]">
-            🌐 {player?.country}
+          <div className="mt-2 text-[12px] text-white/60 flex items-center gap-1 uppercase  tracking-widest">
+            <span className="text-xs">🌐</span> {player?.country}
           </div>
         </div>
-      </div>
+      </motion.div>
     </Html>
   );
 };
-
 
 const randomPlayers = [
   {
@@ -322,7 +325,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     if (!globeRef.current || !isInitialized || filteredPoints.length === 0)
       return;
 
-    // Remove existing pins
+
     pinSpritesRef.current.forEach((sprite) => {
       globeRef.current.remove(sprite);
     });
@@ -332,15 +335,15 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
     const pinTexture = textureLoader.load("/pin.png");
     const spriteScale = 7;
 
-    // Keep pins in the same content, limit to 6 in front hemisphere
+
     const frontPins = filteredPoints
       .map((point) => {
         const coords = globeRef.current.getCoords(point.lat, point.lng, 0.003);
         return { point, coords };
       })
-      // Only front hemisphere (z > 0) AND upper hemisphere (y > 0)
+
       .filter(({ coords }) => coords.z > 0 && coords.y > 0)
-      // Sort by closest to camera (optional but cleaner)
+
       .sort((a, b) => b.coords.z - a.coords.z)
       .slice(0, 6);
 
@@ -417,6 +420,7 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
 
             hoveredPin.position.set(base.x, base.y, base.z);
             hoveredPin.scale.set(7, 7, 1);
+            hoveredPin.renderOrder = 0;
           }
 
           const pop = globeRef.current.getCoords(
@@ -427,13 +431,14 @@ function Globe({ globeConfig, data, pinPopups = [] }) {
 
           pin.position.set(pop.x, pop.y, pop.z);
           pin.scale.set(9, 9, 1);
+          pin.renderOrder = 999;
 
           setHoveredPin(pin);
 
           const popup = globeRef.current.getCoords(
             pin.userData.lat,
             pin.userData.lng,
-            0.025,
+            0.06,
           );
 
           setPopupContent({
@@ -531,16 +536,19 @@ export function World(props) {
         position={new Vector3(-200, 500, 200)}
         intensity={0.8}
       />
-      <Globe className="scale-[0.5]" {...props} />
+
+      <group rotation={[0.2, 0, 0]}>
+        <Globe className="scale-[0.5]" {...props} />
+      </group>
       <OrbitControls
         enablePan={false}
         enableZoom={false}
         minDistance={cameraZ}
         maxDistance={cameraZ}
         autoRotateSpeed={1}
-        autoRotate={true}
-        minPolarAngle={Math.PI / 3.5}
-        maxPolarAngle={Math.PI - Math.PI / 3}
+        autoRotate={false}
+        minPolarAngle={Math.PI / 2.5}
+        maxPolarAngle={Math.PI / 2.5}
       />
     </Canvas>
   );
@@ -567,3 +575,7 @@ export function genRandomNumbers(min, max, count) {
   }
   return arr;
 }
+
+
+
+
