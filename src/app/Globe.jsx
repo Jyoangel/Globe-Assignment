@@ -1,21 +1,22 @@
 "use client";
-import { motion } from "motion/react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 
 const World = dynamic(() => import("@/app/data/globe").then((m) => m.World), {
   ssr: false,
 });
 
 export function GlobeDemo() {
+
   const globeConfig = {
     pointSize: 4,
-    globeColor: "#062056",
+    globeColor: "#3B3B3B",
     showAtmosphere: true,
     atmosphereColor: "#FFFFFF",
     atmosphereAltitude: 0.1,
     emissive: "#062056",
-    emissiveIntensity: 0.1,
-    shininess: 0.9,
+    emissiveIntensity: 0.2,
+    shininess: 6,
     polygonColor: "rgba(255,255,255,0.7)",
     ambientLight: "#38bdf8",
     directionalLeftLight: "#ffffff",
@@ -392,79 +393,122 @@ export function GlobeDemo() {
       color: colors[Math.floor(Math.random() * (colors.length - 1))],
     },
   ];
+
+  const slides = [
+    {
+      label: "Ecosystem",
+      title:
+        "We bridge sports, gaming, and lifestyle by transforming collectibles into dynamic, cross-platform assets across mobile games",
+    },
+    {
+      label: "Ecosystem",
+      title:
+        "Connecting global communities through shared digital assets and collaborative gaming experiences across multiple platforms",
+    },
+    {
+      label: "Ecosystem",
+      title:
+        "Empowering creators and players worldwide with seamless interoperability across virtual worlds and innovative digital ecosystems",
+    },
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  const nextSlide = () => {
+    setIndex((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setIndex((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
   return (
-    <div className="w-full min-h-screen flex flex-col items-center bg-black relative overflow-hidden">
+    <div className="w-full min-h-screen bg-[#000206] flex justify-center">
 
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="text-center mt-16 px-4"
+      <div
+        className="
+        w-full
+        min-h-screen
+        relative
+        rounded-[30px]
+        border-[12px]
+        border-gray-400/20
+        bg-[#060b15]
+        shadow-2xl
+        overflow-hidden
+      "
       >
-        <h2 className="text-2xl md:text-5xl font-bold text-white">
-          Globe Assignment Done - We sell soap worldwide
-        </h2>
-        <p className="text-base md:text-lg text-neutral-400 max-w-2xl mt-4 mx-auto">
-          This globe is interactive and customizable. Have fun with it.
-        </p>
-      </motion.div>
-
-      {/* Globe Frame Section */}
-      <div className="relative w-full flex justify-center mt-16 px-4">
 
 
-        <div
-          className="
-          relative 
-          w-full 
-          max-w-[1300px] 
-          h-[650px] 
-          rounded-[40px] 
-          border-12 border-gray-400/20 
-          bg-[#111827] 
-          shadow-2xl 
-          overflow-hidden
-        "
-        >
+        <div className="relative w-full h-[600px] overflow-hidden flex justify-center">
 
 
           <div
             className="
-            absolute 
-            bottom-0 
-            left-0 
-            right-0 
-            h-48 
-            bg-gradient-to-b 
-            from-transparent 
-            to-[#04060a] 
-            z-20 
-            pointer-events-none
-          "
-          />
-
-
-          <div
-            className="
-            absolute 
+            absolute
            
-            left-1/2 
-            -translate-x-1/2 
-            w-[1400px] 
+            left-1/2
+            -translate-x-1/2
+            w-[1400px]
             h-[1400px]
           "
           >
             <World
               data={sampleArcs}
               globeConfig={globeConfig}
-              className="scale-[1.35]"
+              className="scale-[1.4]"
             />
           </div>
 
+          <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-b from-transparent to-[#060b15] z-20 pointer-events-none" />
         </div>
+
+
+
+        <section className="relative w-full h-screen bg-black">
+
+
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_50%,_#1a103d_0%,_#0b0f1a_40%,_#000000_75%)]" />
+
+          <div className="relative z-10 w-full h-full flex items-center justify-between px-24">
+
+            <div className="max-w-4xl">
+              <div className="flex items-center gap-3 mb-10">
+                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span className="text-gray-400 tracking-widest text-sm uppercase">
+                  {slides[index].label}
+                </span>
+              </div>
+
+              <h1 className="text-white text-4xl md:text-6xl font-semibold leading-tight tracking-tight">
+                {slides[index].title}
+              </h1>
+            </div>
+
+            <div className="hidden md:flex items-center">
+              <button
+                onClick={prevSlide}
+                className="w-20 h-20 border border-white/20 flex items-center justify-center text-white text-xl hover:bg-white/10 transition"
+              >
+                ❮
+              </button>
+
+              <button
+                onClick={nextSlide}
+                className="w-20 h-20 border border-white/20 border-l-0 flex items-center justify-center text-white text-xl hover:bg-white/10 transition"
+              >
+                ❯
+              </button>
+            </div>
+
+          </div>
+        </section>
+
       </div>
     </div>
   );
+
+
 
 }
